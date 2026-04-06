@@ -1,0 +1,15 @@
+{
+  "name": "obsidian-tasks-skills",
+  "owner": {
+    "name": "Aleksandr Britvin",
+    "url": "https://github.com/lexbritvin"
+  },
+  "plugins": [
+    {
+      "name": "obsidian-tasks",
+      "source": "./",
+      "description": "Agent Skills for Obsidian Tasks plugin",
+      "version": "1.0.0"
+    }
+  ]
+}
