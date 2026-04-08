@@ -9,7 +9,7 @@
       "name": "obsidian-tasks",
       "source": "./",
       "description": "Agent Skills for Obsidian Tasks plugin",
-      "version": "1.0.0"
+      "version": "1.0.1"
     }
   ]
 }

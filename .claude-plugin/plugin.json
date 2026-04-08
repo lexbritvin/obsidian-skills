@@ -1,6 +1,6 @@
 {
   "name": "obsidian-tasks",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Create, query, and manage Obsidian Tasks. Use when working with task checkboxes, tasks query blocks, or reading task data from an Obsidian vault with the Tasks plugin.",
   "author": {
     "name": "Aleksandr Britvin",
