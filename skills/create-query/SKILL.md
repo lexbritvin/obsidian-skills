@@ -72,6 +72,20 @@ limit 20
 
 These cover the most common cases. For anything more complex — date ranges, custom scripting, regex filters, layout options — read the reference files below.
 
+## Overriding the Global Query
+
+The Tasks plugin has a `globalQuery` setting (Settings → Tasks → Global query) that prepends to every query block. To run a block without it — for example a "show everything" view, or to look at items the user has globally hidden — add `ignore global query` as the first line:
+
+````markdown
+```tasks
+ignore global query
+not done
+group by filename
+```
+````
+
+This disables the entire globalQuery for that block. Selective override of individual lines is not supported — it's all or nothing. Use this when you specifically want to surface tasks the global filter normally hides (e.g. items tagged `#wishlist` or `#learning` in frontmatter).
+
 ## Boolean Filters
 
 Combine multiple conditions on a single line with operators:

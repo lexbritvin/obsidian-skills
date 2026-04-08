@@ -90,6 +90,8 @@ Then translate each line into a JS predicate. The Tasks query DSL is rich, but t
 | `filename includes X` | `t.taskLocation.path.split('/').pop().includes('X')` |
 | `tag includes #X` / `tags include #X` | `t.tags.includes('#X')` |
 | `tag does not include #X` | `!t.tags.includes('#X')` |
+| `filter by function (task.file.tags ?? []).includes('#X')` (file frontmatter tag) | `(t.taskLocation._tasksFile?.tags ?? []).includes('#X')` |
+| `filter by function ! (task.file.tags ?? []).includes('#X')` | `!(t.taskLocation._tasksFile?.tags ?? []).includes('#X')` |
 | `not done` | `!t.isDone` |
 | `done` | `t.isDone` |
 | `is recurring` | `t.isRecurring` |
@@ -102,20 +104,29 @@ Then translate each line into a JS predicate. The Tasks query DSL is rich, but t
 
 For more complex DSL (boolean combinations, custom scripting, regex), translate inline as needed or warn the user that the filter is too complex to auto-apply.
 
-**Practical pattern** — read globalQuery once, build a list of predicates, then filter:
+**Practical pattern** — read globalQuery once, parse the common exclusion lines, then filter:
 
 ```javascript
 const data = await plugin.loadData();
-const excludedFolders = (data.globalQuery || '')
-  .split('\n')
+const lines = (data.globalQuery || '').split('\n');
+const excludedFolders = lines
   .map(l => l.match(/^\s*folder does not include\s+(.+?)\s*$/i))
-  .filter(Boolean)
-  .map(m => m[1]);
-const tasks = plugin.cache.getTasks()
-  .filter(t => !excludedFolders.some(f => t.taskLocation.path.startsWith(f)));
+  .filter(Boolean).map(m => m[1]);
+const excludedFileTags = lines
+  .map(l => l.match(/^\s*filter by function\s*!\s*\(task\.file\.tags\s*\?\?\s*\[\]\)\.includes\(["'](#?[^"']+)["']\)/))
+  .filter(Boolean).map(m => m[1].startsWith('#') ? m[1] : '#' + m[1]);
+
+const tasks = plugin.cache.getTasks().filter(t => {
+  if (excludedFolders.some(f => t.taskLocation.path.startsWith(f))) return false;
+  const fileTags = t.taskLocation._tasksFile?.tags ?? [];
+  if (excludedFileTags.some(tag => fileTags.includes(tag))) return false;
+  return true;
+});
 ```
 
-This handles the most common case (folder exclusions). For other DSL filters in `globalQuery`, extend the parsing or write a tailored predicate.
+This covers folder exclusions and file-frontmatter tag exclusions — the two most common globalQuery patterns. For other DSL filters, extend the parsing or write a tailored predicate.
+
+**Note:** changing `globalQuery` via `saveData()` does not refresh rendered query blocks until the plugin reloads (`app.plugins.disablePlugin('obsidian-tasks-plugin'); app.plugins.enablePlugin('obsidian-tasks-plugin')`). The cache itself never applies globalQuery — that's why these recipes filter manually.
 
 ## Task Object Properties
 
