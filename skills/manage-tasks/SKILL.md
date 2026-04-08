@@ -57,16 +57,67 @@ obsidian append path="note.md" content="- [ ] New task 📅 2025-04-10"
 
 For filtering by priority, dates, tags, or any combination — use `obsidian eval` to access the Tasks plugin cache. The cache holds all parsed task objects with rich queryable properties.
 
-All eval code must be wrapped in an IIFE because `obsidian eval` doesn't support top-level return:
+Wrap eval code in an async IIFE so you can call `loadData()` (used to read settings like `globalQuery`) and because `obsidian eval` doesn't support top-level return:
 
 ```bash
-obsidian eval code="(()=>{
-  const tasks = app.plugins.plugins['obsidian-tasks-plugin'].cache.getTasks();
+obsidian eval code="(async()=>{
+  const plugin = app.plugins.plugins['obsidian-tasks-plugin'];
+  const tasks = plugin.cache.getTasks();
   // filter, map, return
 })()"
 ```
 
-### Task Object Properties
+## Respecting globalQuery
+
+The Tasks plugin has a `globalQuery` setting (Settings → Tasks → "Global query") that applies to every rendered query block. The cache returned by `getTasks()` does **not** automatically apply it — you'll see all tasks, including ones the user has globally excluded.
+
+To make eval recipes consistent with what the user sees in their query blocks, read `globalQuery` and translate the filters to JS:
+
+```javascript
+const plugin = app.plugins.plugins['obsidian-tasks-plugin'];
+const data = await plugin.loadData();
+const globalQuery = data.globalQuery || '';
+```
+
+Then translate each line into a JS predicate. The Tasks query DSL is rich, but the common cases map cleanly:
+
+| Tasks DSL line | JS predicate on `t` |
+|----------------|---------------------|
+| `folder includes X` | `t.taskLocation.path.startsWith('X')` |
+| `folder does not include X` | `!t.taskLocation.path.startsWith('X')` |
+| `path includes X` | `t.taskLocation.path.includes('X')` |
+| `path does not include X` | `!t.taskLocation.path.includes('X')` |
+| `filename includes X` | `t.taskLocation.path.split('/').pop().includes('X')` |
+| `tag includes #X` / `tags include #X` | `t.tags.includes('#X')` |
+| `tag does not include #X` | `!t.tags.includes('#X')` |
+| `not done` | `!t.isDone` |
+| `done` | `t.isDone` |
+| `is recurring` | `t.isRecurring` |
+| `is blocked` / `is not blocked` | `t.isBlocked` / `!t.isBlocked` |
+| `priority is highest/high/medium/low/lowest` | `t.priorityName === 'Highest'` etc. |
+| `priority is above medium` | `['Highest','High'].includes(t.priorityName)` |
+| `has due date` / `no due date` | `t.due.moment !== null` / `t.due.moment === null` |
+| `due before today` | `t.due.moment && t.due.moment.isBefore(window.moment().startOf('day'))` |
+| `due this week` | `t.due.moment && t.due.moment.isSame(window.moment(), 'week')` |
+
+For more complex DSL (boolean combinations, custom scripting, regex), translate inline as needed or warn the user that the filter is too complex to auto-apply.
+
+**Practical pattern** — read globalQuery once, build a list of predicates, then filter:
+
+```javascript
+const data = await plugin.loadData();
+const excludedFolders = (data.globalQuery || '')
+  .split('\n')
+  .map(l => l.match(/^\s*folder does not include\s+(.+?)\s*$/i))
+  .filter(Boolean)
+  .map(m => m[1]);
+const tasks = plugin.cache.getTasks()
+  .filter(t => !excludedFolders.some(f => t.taskLocation.path.startsWith(f)));
+```
+
+This handles the most common case (folder exclusions). For other DSL filters in `globalQuery`, extend the parsing or write a tailored predicate.
+
+## Task Object Properties
 
 | Property | Type | Description |
 |----------|------|-------------|
@@ -91,7 +142,7 @@ obsidian eval code="(()=>{
 | `taskLocation.lineNumber` | number | Line number in file |
 | `originalMarkdown` | string | Raw markdown line |
 
-### TasksDate
+## TasksDate
 
 A TasksDate object is always present, but the underlying date may be empty. Check `task.due.moment` — it's `null` when no date is set:
 
@@ -103,13 +154,18 @@ task.due.formatAsDate()                  // formatted string
 task.due.category.groupText              // "Overdue", "Today", "Future", "Undated"
 ```
 
-### Recipes
+## Recipes
+
+Each recipe uses an async IIFE, reads `globalQuery` for folder exclusions, and applies them before filtering. Add more globalQuery translations from the table above when relevant.
 
 **Task count by status:**
 
 ```bash
-obsidian eval code="(()=>{
-  const tasks = app.plugins.plugins['obsidian-tasks-plugin'].cache.getTasks();
+obsidian eval code="(async()=>{
+  const plugin = app.plugins.plugins['obsidian-tasks-plugin'];
+  const data = await plugin.loadData();
+  const excluded = (data.globalQuery||'').split('\n').map(l=>l.match(/^\s*folder does not include\s+(.+?)\s*$/i)).filter(Boolean).map(m=>m[1]);
+  const tasks = plugin.cache.getTasks().filter(t => !excluded.some(f => t.taskLocation.path.startsWith(f)));
   const counts = {};
   tasks.forEach(t => { const s = t.isDone ? 'done' : 'todo'; counts[s] = (counts[s]||0)+1; });
   return JSON.stringify(counts);
@@ -119,10 +175,13 @@ obsidian eval code="(()=>{
 **Overdue tasks:**
 
 ```bash
-obsidian eval code="(()=>{
-  const tasks = app.plugins.plugins['obsidian-tasks-plugin'].cache.getTasks();
+obsidian eval code="(async()=>{
+  const plugin = app.plugins.plugins['obsidian-tasks-plugin'];
+  const data = await plugin.loadData();
+  const excluded = (data.globalQuery||'').split('\n').map(l=>l.match(/^\s*folder does not include\s+(.+?)\s*$/i)).filter(Boolean).map(m=>m[1]);
   const today = window.moment().startOf('day');
-  return tasks
+  return plugin.cache.getTasks()
+    .filter(t => !excluded.some(f => t.taskLocation.path.startsWith(f)))
     .filter(t => !t.isDone && t.due.moment && t.due.moment.isBefore(today))
     .map(t => t.description + ' 📅 ' + t.due.formatAsDate() + ' (' + t.taskLocation.path + ')')
     .join('\n') || 'No overdue tasks';
@@ -132,9 +191,12 @@ obsidian eval code="(()=>{
 **High priority tasks:**
 
 ```bash
-obsidian eval code="(()=>{
-  const tasks = app.plugins.plugins['obsidian-tasks-plugin'].cache.getTasks();
-  return tasks
+obsidian eval code="(async()=>{
+  const plugin = app.plugins.plugins['obsidian-tasks-plugin'];
+  const data = await plugin.loadData();
+  const excluded = (data.globalQuery||'').split('\n').map(l=>l.match(/^\s*folder does not include\s+(.+?)\s*$/i)).filter(Boolean).map(m=>m[1]);
+  return plugin.cache.getTasks()
+    .filter(t => !excluded.some(f => t.taskLocation.path.startsWith(f)))
     .filter(t => !t.isDone && ['Highest','High'].includes(t.priorityName))
     .map(t => t.priorityName + ': ' + t.description)
     .join('\n') || 'No high priority tasks';
@@ -144,13 +206,18 @@ obsidian eval code="(()=>{
 **Tasks by folder:**
 
 ```bash
-obsidian eval code="(()=>{
-  const tasks = app.plugins.plugins['obsidian-tasks-plugin'].cache.getTasks();
+obsidian eval code="(async()=>{
+  const plugin = app.plugins.plugins['obsidian-tasks-plugin'];
+  const data = await plugin.loadData();
+  const excluded = (data.globalQuery||'').split('\n').map(l=>l.match(/^\s*folder does not include\s+(.+?)\s*$/i)).filter(Boolean).map(m=>m[1]);
   const groups = {};
-  tasks.filter(t => !t.isDone).forEach(t => {
-    const folder = t.taskLocation.path.split('/').slice(0,-1).join('/') || '/';
-    groups[folder] = (groups[folder]||0)+1;
-  });
+  plugin.cache.getTasks()
+    .filter(t => !excluded.some(f => t.taskLocation.path.startsWith(f)))
+    .filter(t => !t.isDone)
+    .forEach(t => {
+      const folder = t.taskLocation.path.split('/').slice(0,-1).join('/') || '/';
+      groups[folder] = (groups[folder]||0)+1;
+    });
   return Object.entries(groups).sort((a,b)=>b[1]-a[1]).map(([f,c])=>c+' '+f).join('\n');
 })()"
 ```
@@ -158,11 +225,14 @@ obsidian eval code="(()=>{
 **Tasks due this week:**
 
 ```bash
-obsidian eval code="(()=>{
-  const tasks = app.plugins.plugins['obsidian-tasks-plugin'].cache.getTasks();
+obsidian eval code="(async()=>{
+  const plugin = app.plugins.plugins['obsidian-tasks-plugin'];
+  const data = await plugin.loadData();
+  const excluded = (data.globalQuery||'').split('\n').map(l=>l.match(/^\s*folder does not include\s+(.+?)\s*$/i)).filter(Boolean).map(m=>m[1]);
   const start = window.moment().startOf('week');
   const end = window.moment().endOf('week');
-  return tasks
+  return plugin.cache.getTasks()
+    .filter(t => !excluded.some(f => t.taskLocation.path.startsWith(f)))
     .filter(t => !t.isDone && t.due.moment && t.due.moment.isBetween(start, end, null, '[]'))
     .sort((a,b) => a.due.moment.valueOf() - b.due.moment.valueOf())
     .map(t => t.due.formatAsDate() + ' ' + t.description)
