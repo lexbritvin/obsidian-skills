@@ -1,12 +1,12 @@
 {
-  "name": "lexbritvin-obsidian-skills",
+  "name": "obsidian-skills-pack",
   "owner": {
     "name": "Aleksandr Britvin",
     "url": "https://github.com/lexbritvin"
   },
   "metadata": {
-    "description": "Agent Skills for Obsidian — author plugin syntax (queries, tasks, charts, interactive UI) directly in your notes",
-    "version": "3.1.0"
+    "description": "Agent Skills for Obsidian — plugin syntax (queries, tasks, charts, interactive UI), graph view tuning, vault auditing, heatmap visualizations",
+    "version": "1.0.0"
   },
   "plugins": [
     {
@@ -62,6 +62,33 @@
         "./skills/obsidian-tasks-cli"
       ],
       "version": "2.0.0"
+    },
+    {
+      "name": "obsidian-graph",
+      "description": "Skill for tuning the Obsidian Graph view — color groups, filters, forces, full graph.json schema, search syntax, RGB encoding",
+      "source": "./",
+      "skills": [
+        "./skills/obsidian-graph"
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "name": "obsidian-graph-audit",
+      "description": "Skill for auditing the vault through the Graph view — orphans, hubs, name collisions, hidden cluster patterns, link-density signals",
+      "source": "./",
+      "skills": [
+        "./skills/obsidian-graph-audit"
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "name": "obsidian-heatmap",
+      "description": "Skill for heatmap visualizations in Obsidian — Heatmap Calendar plugin (Richardsl) plus custom DataviewJS patterns for week/matrix/sticky-row layouts",
+      "source": "./",
+      "skills": [
+        "./skills/obsidian-heatmap"
+      ],
+      "version": "1.0.0"
     }
   ]
 }

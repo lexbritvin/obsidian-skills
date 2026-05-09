@@ -30,7 +30,7 @@ JSON output shape:
   {
     "status": " ",
     "text": "- [ ] Buy groceries 📅 2025-04-10",
-    "file": "10 - Projects/Shopping.md",
+    "file": "Projects/Shopping.md",
     "line": "12"
   }
 ]
