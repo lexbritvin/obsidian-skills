@@ -1,47 +1,56 @@
-Agent Skills for use with the [Obsidian Tasks](https://github.com/obsidian-tasks-group/obsidian-tasks) plugin.
+# Obsidian Skills for Claude
 
-These skills follow the [Agent Skills specification](https://agentskills.io/specification) so they can be used by any skills-compatible agent, including Claude Code and Codex CLI.
+Agent Skills that teach Claude to write [Obsidian](https://obsidian.md) plugin syntax fluently — queries, tasks, and charts directly inside your notes. Compatible with Claude Code, Codex CLI, OpenCode, and any other [skills-compatible agent](https://agentskills.io/specification).
 
-## Installation
+| Skill | For plugin | What it does |
+| --- | --- | --- |
+| [`obsidian-dataview`](skills/obsidian-dataview) | [Dataview](https://github.com/blacksmithgu/obsidian-dataview) | Queries and dashboards over your notes — find files by tag, list overdue tasks, build tables from frontmatter. |
+| [`obsidian-charts`](skills/obsidian-charts) | [Charts](https://github.com/phibr0/obsidian-charts) | Bar, line, pie, radar, and scatter charts inside notes. Pairs with Dataview for live data. |
+| [`obsidian-meta-bind`](skills/obsidian-meta-bind) | [Meta Bind](https://github.com/mProjectsCode/obsidian-meta-bind-plugin) | Buttons, input fields, view fields, and embeds. Schema, JS Engine integration, validation pitfalls. |
+| [`obsidian-tasks-syntax`](skills/obsidian-tasks-syntax) | [Tasks](https://github.com/obsidian-tasks-group/obsidian-tasks) | Task lines with due dates, priorities, recurrence, and dependencies. |
+| [`obsidian-tasks-query`](skills/obsidian-tasks-query) | [Tasks](https://github.com/obsidian-tasks-group/obsidian-tasks) | Query blocks to surface tasks across your vault — overdue, by project, by tag. |
+| [`obsidian-tasks-cli`](skills/obsidian-tasks-cli) | [Tasks](https://github.com/obsidian-tasks-group/obsidian-tasks) | Read and update tasks from the command line via the [Obsidian CLI](https://help.obsidian.md/cli). |
 
-### Marketplace
+Each skill ships with detailed reference files — open the linked folder for full coverage.
 
-```
-/plugin marketplace add lexbritvin/obsidian-tasks-skills
-/plugin install obsidian-tasks@obsidian-tasks-skills
-```
+## Install
 
-### Manually
-
-#### Claude Code
-
-Add the contents of this repo to a `/.claude` folder in the root of your Obsidian vault (or whichever folder you're using with Claude Code). See more in the [official Claude Skills documentation](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview).
-
-#### Codex CLI
-
-Copy the `skills/` directory into your Codex skills path (typically `~/.codex/skills`). See the [Agent Skills specification](https://agentskills.io/specification) for the standard skill format.
-
-#### OpenCode
-
-Clone the entire repo into the OpenCode skills directory (`~/.opencode/skills/`):
+### Claude Code
 
 ```
-git clone https://github.com/lexbritvin/obsidian-tasks-skills.git ~/.opencode/skills/obsidian-tasks-skills
+/plugin marketplace add lexbritvin/obsidian-skills
+/plugin install obsidian-dataview@lexbritvin-obsidian-skills
+/plugin install obsidian-charts@lexbritvin-obsidian-skills
+/plugin install obsidian-meta-bind@lexbritvin-obsidian-skills
+/plugin install obsidian-tasks-syntax@lexbritvin-obsidian-skills
+/plugin install obsidian-tasks-query@lexbritvin-obsidian-skills
+/plugin install obsidian-tasks-cli@lexbritvin-obsidian-skills
 ```
 
-Do not copy only the inner `skills/` folder — clone the full repo so the directory structure is `~/.opencode/skills/obsidian-tasks-skills/skills/<skill-name>/SKILL.md`.
+Each line installs one skill. Pick whichever you need.
 
-OpenCode auto-discovers all `SKILL.md` files under `~/.opencode/skills/`. No changes to `opencode.json` or any config file are needed. Skills become available after restarting OpenCode.
+### Codex CLI
 
-## Requirements
+Copy the relevant `skills/<skill-name>/` directories into `~/.codex/skills/`.
 
-- [Obsidian Tasks plugin](https://github.com/obsidian-tasks-group/obsidian-tasks) installed in your vault
-- **manage-tasks only:** [Obsidian CLI](https://help.obsidian.md/cli) (Obsidian 1.12+, Settings > General > CLI) and Obsidian running
+### OpenCode
 
-## Skills
+```
+git clone https://github.com/lexbritvin/obsidian-skills.git ~/.opencode/skills/obsidian-skills
+```
 
-| Skill | Description |
-| --- | --- |
-| [create-task](https://github.com/lexbritvin/obsidian-tasks-skills/blob/main/skills/create-task) | Create and edit task lines with emoji-based dates, priorities, recurrence, dependencies, and statuses |
-| [create-query](https://github.com/lexbritvin/obsidian-tasks-skills/blob/main/skills/create-query) | Build `tasks` query blocks with filters, sorting, grouping, and layout options |
-| [manage-tasks](https://github.com/lexbritvin/obsidian-tasks-skills/blob/main/skills/manage-tasks) | Read, filter, and update tasks via the [Obsidian CLI](https://help.obsidian.md/cli) and Tasks plugin API |
+### Manually in a vault
+
+Copy the relevant `skills/<skill-name>/` directories into `<vault>/.claude/skills/`.
+
+## Versioning
+
+[Semver](https://semver.org/) at two levels — marketplace `metadata.version` and per-plugin `version`.
+
+- **MAJOR** — plugin renamed, removed, or install path broken (existing installs fail after `/plugin update`).
+- **MINOR** — new plugin or skill added; existing installs keep working.
+- **PATCH** — content fixes inside an existing skill; no structural change.
+
+## License
+
+[MIT](LICENSE)

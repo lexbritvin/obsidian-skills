@@ -1,5 +1,5 @@
 ---
-name: create-task
+name: obsidian-tasks-syntax
 description: Creates and edits Obsidian Tasks plugin task lines with emoji-based dates, priorities, recurrence, dependencies, and statuses. Use when the user asks to add a task, create a todo, set a due date, change priority, add recurrence, make a recurring reminder, edit a checkbox line, or anything involving task emoji signifiers (📅⏳🛫🔁). Also use when the user says "remind me to", "add a todo", "new checkbox", or wants to understand the task format.
 compatibility: Designed for Obsidian vaults with the Tasks plugin installed.
 ---

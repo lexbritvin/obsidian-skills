@@ -1,5 +1,5 @@
 ---
-name: manage-tasks
+name: obsidian-tasks-cli
 description: Reads, filters, and updates Obsidian tasks using the CLI. Lists tasks, marks them done, toggles status, counts tasks, and runs advanced queries via the Tasks plugin API. Use when the user asks to see their tasks, check what's overdue, mark something done, analyze task progress, get a task summary, count tasks, or retrieve task data programmatically — even if they don't mention CLI or API.
 compatibility: Requires Obsidian 1.12+ with CLI enabled (Settings > General > CLI) and Obsidian running.
 ---

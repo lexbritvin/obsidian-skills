@@ -1,5 +1,5 @@
 ---
-name: create-query
+name: obsidian-tasks-query
 description: Creates Obsidian Tasks plugin query blocks with filters, sorting, grouping, and layout options. Use when the user asks to build a task dashboard, show overdue tasks, list tasks by priority, create a task view or report in a note, write a tasks code block, group tasks by project, filter tasks by folder or date, make a weekly review page, or anything involving a tasks query block in markdown.
 compatibility: Designed for Obsidian vaults with the Tasks plugin installed.
 ---

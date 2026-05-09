@@ -1,15 +1,67 @@
 {
-  "name": "obsidian-tasks-skills",
+  "name": "lexbritvin-obsidian-skills",
   "owner": {
     "name": "Aleksandr Britvin",
     "url": "https://github.com/lexbritvin"
   },
+  "metadata": {
+    "description": "Agent Skills for Obsidian — author plugin syntax (queries, tasks, charts, interactive UI) directly in your notes",
+    "version": "3.1.0"
+  },
   "plugins": [
     {
-      "name": "obsidian-tasks",
+      "name": "obsidian-dataview",
+      "description": "Skill for the Obsidian Dataview plugin — DQL queries, DataviewJS API, metadata model, every function",
       "source": "./",
-      "description": "Agent Skills for Obsidian Tasks plugin",
-      "version": "1.0.2"
+      "skills": [
+        "./skills/obsidian-dataview"
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "name": "obsidian-charts",
+      "description": "Skill for the Obsidian Charts plugin (phibr0) — chart codeblocks, advanced JSON, table-driven charts, DataviewJS rendering via window.renderChart",
+      "source": "./",
+      "skills": [
+        "./skills/obsidian-charts"
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "name": "obsidian-meta-bind",
+      "description": "Skill for the Obsidian Meta Bind plugin — buttons, input fields, view fields, embeds, JS Engine integration, and the validation pitfalls",
+      "source": "./",
+      "skills": [
+        "./skills/obsidian-meta-bind"
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "name": "obsidian-tasks-syntax",
+      "description": "Skill for the Obsidian Tasks plugin — task lines with emoji metadata (📅⏳🛫🔁), priorities, recurrence, dependencies",
+      "source": "./",
+      "skills": [
+        "./skills/obsidian-tasks-syntax"
+      ],
+      "version": "2.0.0"
+    },
+    {
+      "name": "obsidian-tasks-query",
+      "description": "Skill for the Obsidian Tasks plugin — query blocks with filters, sorting, grouping, layout",
+      "source": "./",
+      "skills": [
+        "./skills/obsidian-tasks-query"
+      ],
+      "version": "2.0.0"
+    },
+    {
+      "name": "obsidian-tasks-cli",
+      "description": "Skill for the Obsidian Tasks plugin — read and update tasks via Obsidian CLI and Tasks plugin API",
+      "source": "./",
+      "skills": [
+        "./skills/obsidian-tasks-cli"
+      ],
+      "version": "2.0.0"
     }
   ]
 }
